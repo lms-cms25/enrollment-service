@@ -17,7 +17,6 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-
     app.MapGet("/", () => Results.Redirect("/swagger"));
 }
 
@@ -26,3 +25,5 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }
