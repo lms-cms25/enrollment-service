@@ -1,3 +1,24 @@
+# Enrollment Service
+
+Microservice for managing student course enrollments in Shiko LMS.
+
+## Deployed API
+
+Swagger:
+https://enrollment-service-api-vita-geajcyhkhdamdqb7.swedencentral-01.azurewebsites.net/swagger/index.html
+
+## Azure Deployment
+
+Status: Successfully deployed to Azure App Service
+
+## Technologies
+
+- ASP.NET Core Web API
+- Entity Framework Core
+- SQL Server
+- Swagger/OpenAPI
+- Azure App Service
+
 # enrollment-service
 Microservice for managing student course enrollments in Shiko LMS
  # Enrollment Service
