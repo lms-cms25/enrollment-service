@@ -1,91 +1,75 @@
-# Enrollment Service
+# Azure Deployment
 
-Microservice for managing student course enrollments in Shiko LMS.
+## Enrollment Service API
 
-## Deployed API
+Azure App Service:
+
+https://enrollment-service-api-vita-geajcyhkhdamdqb7.swedencentral-01.azurewebsites.net
 
 Swagger:
+
 https://enrollment-service-api-vita-geajcyhkhdamdqb7.swedencentral-01.azurewebsites.net/swagger/index.html
 
-## Azure Deployment
 
-Status: Successfully deployed to Azure App Service
+# Enrollment Service
 
-## Technologies
+Microservice for managing student enrollments in programs for the Shiko LMS platform.
 
-- ASP.NET Core Web API
-- Entity Framework Core
-- SQL Server
-- Swagger/OpenAPI
-- Azure App Service
+---
 
-# enrollment-service
-Microservice for managing student course enrollments in Shiko LMS
- # Enrollment Service
+# Overview
 
-Enrollment Service is a microservice for managing student course enrollments in the LMS platform.
+Enrollment Service is responsible for handling student registrations in LMS programs.
 
-## Features
+The service follows a program-based enrollment structure similar to Nackademin LMS architecture, where:
+
+- students enroll into programs
+- programs contain multiple courses
+- courses are connected to programs
+
+Example:
+
+.NET Webbutvecklare Program
+- ASP.NET 1
+- ASP.NET 2
+- Databases
+- Affärsmannaskap
+
+Students are enrolled into the program instead of individual courses.
+
+---
+
+# Features
 
 - Create enrollment
-- Get student enrollments
+- Get all enrollments
+- Get enrollment by id
 - Delete enrollment
 - Prevent duplicate enrollments
-- Admin get all enrollments
+- Program-based enrollment architecture
 - Swagger API documentation
 - Azure SQL Database integration
 - Entity Framework Core
 - REST API architecture
+- Azure deployment
 
 ---
 
-## Technologies
+# Technologies
 
 - ASP.NET Core Web API
 - Entity Framework Core
 - SQL Server / Azure SQL
-- Swagger
-- Docker 
-- xUnit 
+- Swagger / OpenAPI
+- Azure App Service
+- Docker
+- xUnit
 
 ---
 
-## API Endpoints
+# API Endpoints
 
-### Create Enrollment
+## Get All Enrollments
 
 ```http
-POST /api/enrollments
-
-Get Student Enrollments
-GET /api/enrollments/student/{studentId}
-Get All Enrollments
 GET /api/enrollments
-Delete Enrollment
-DELETE /api/enrollments/{id}
-Architecture
-
-The service uses a layered structure with:
-
-Controllers
-DTOs
-Models
-DbContext
-
-The service communicates through REST API and stores data in Azure SQL Database.
-
-Security
-
-The service is prepared for JWT Authentication and Authorization integration.
-
-Testing
-
-The project includes testing for:
-
-API functionality
-CRUD operations
-Enrollment service logic
-
-Author
-
-Vitaliia Sivakova
