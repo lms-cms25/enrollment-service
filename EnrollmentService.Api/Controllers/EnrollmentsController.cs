@@ -1,13 +1,14 @@
 ﻿using EnrollmentService.Api.Data;
 using EnrollmentService.Api.Dtos;
 using EnrollmentService.Api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace EnrollmentService.Api.Controllers;
 
 [ApiController]
-[Route("api/enrollments")]
+[Route("api/[controller]")]
 public class EnrollmentsController : ControllerBase
 {
     private readonly EnrollmentDbContext _context;
@@ -17,73 +18,95 @@ public class EnrollmentsController : ControllerBase
         _context = context;
     }
 
-    // Skapar en ny enrollment
-    [HttpPost]
-    public async Task<IActionResult> CreateEnrollment([FromBody] CreateEnrollmentDto request)
-    {
-        if (request.CourseId <= 0 || string.IsNullOrWhiteSpace(request.StudentId))
-        {
-            return BadRequest(new
-            {
-                message = "CourseId and StudentId are required"
-            });
-        }
-
-        // Kontrollera om studenten redan är registrerad på samma kurs
-        var existingEnrollment = await _context.Enrollments
-            .FirstOrDefaultAsync(e =>
-                e.StudentId == request.StudentId &&
-                e.CourseId == request.CourseId);
-
-        if (existingEnrollment != null)
-        {
-            return BadRequest("Student is already enrolled in this course.");
-        }
-
-        var enrollment = new Enrollment
-        {
-            CourseId = request.CourseId,
-            StudentId = request.StudentId,
-            EnrolledAt = DateTime.UtcNow
-        };
-
-        _context.Enrollments.Add(enrollment);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(CreateEnrollment), new { id = enrollment.Id }, enrollment);
-    }
-
-    // Hämta alla enrollments för en student
-    [HttpGet("student/{studentId}")]
-    public async Task<IActionResult> GetStudentEnrollments(string studentId)
+    // Hämtar alla enrollments
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<EnrollmentResponseDto>>> GetEnrollments()
     {
         var enrollments = await _context.Enrollments
-            .Where(e => e.StudentId == studentId)
+            .Select(e => new EnrollmentResponseDto
+            {
+                Id = e.Id,
+                StudentId = e.StudentId,
+                ProgramId = e.ProgramId,
+                EnrolledAt = e.EnrolledAt,
+                Status = e.Status
+            })
             .ToListAsync();
 
         return Ok(enrollments);
     }
 
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Enrollment>>> GetAllEnrollments()
+    // Hämtar enrollment med id
+    [HttpGet("{id}")]
+    public async Task<ActionResult<EnrollmentResponseDto>> GetEnrollment(int id)
     {
-        var enrollments = await _context.Enrollments.ToListAsync();
-
-        return Ok(enrollments);
-    }
-
-    // Ta bort enrollment
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> CancelEnrollment(int id)
-    {
-        var enrollment = await _context.Enrollments.FindAsync(id);
+        var enrollment = await _context.Enrollments
+            .FirstOrDefaultAsync(e => e.Id == id);
 
         if (enrollment == null)
-        {
             return NotFound();
+
+        return Ok(new EnrollmentResponseDto
+        {
+            Id = enrollment.Id,
+            StudentId = enrollment.StudentId,
+            ProgramId = enrollment.ProgramId,
+            EnrolledAt = enrollment.EnrolledAt,
+            Status = enrollment.Status
+        });
+    }
+
+    // Registrerar student till program
+    [Authorize(Roles = "Admin")]
+    [HttpPost]
+    public async Task<ActionResult<EnrollmentResponseDto>> CreateEnrollment(CreateEnrollmentDto request)
+    {
+        var alreadyExists = await _context.Enrollments
+            .AnyAsync(e =>
+                e.StudentId == request.StudentId &&
+                e.ProgramId == request.ProgramId);
+
+        if (alreadyExists)
+        {
+            return BadRequest(new
+            {
+                message = "Student is already enrolled in this program."
+            });
         }
 
+        var enrollment = new Enrollment
+        {
+            StudentId = request.StudentId,
+            ProgramId = request.ProgramId
+        };
+
+        _context.Enrollments.Add(enrollment);
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new EnrollmentResponseDto
+        {
+            Id = enrollment.Id,
+            StudentId = enrollment.StudentId,
+            ProgramId = enrollment.ProgramId,
+            EnrolledAt = enrollment.EnrolledAt,
+            Status = enrollment.Status
+        });
+    }
+
+    // Tar bort enrollment
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteEnrollment(int id)
+    {
+        var enrollment = await _context.Enrollments
+            .FirstOrDefaultAsync(e => e.Id == id);
+
+        if (enrollment == null)
+            return NotFound();
+
         _context.Enrollments.Remove(enrollment);
+
         await _context.SaveChangesAsync();
 
         return NoContent();
